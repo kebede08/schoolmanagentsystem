@@ -23,6 +23,42 @@ class SchoolState extends ChangeNotifier {
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
 
+  // School Settings
+  String _schoolName = 'EduPulse Academy';
+  String get schoolName => _schoolName;
+
+  String _schoolAddress = '450 University Avenue, Education District, Innovation Park';
+  String get schoolAddress => _schoolAddress;
+
+  String _schoolPhone = '+1 (555) 789-2000';
+  String get schoolPhone => _schoolPhone;
+
+  String _principalName = 'Dr. Sarah Sterling';
+  String get principalName => _principalName;
+
+  String _academicSession = '2026-2027';
+  String get academicSession => _academicSession;
+
+  String _gradingScale = 'GPA 4.0 Standard Scale';
+  String get gradingScale => _gradingScale;
+
+  void updateSchoolSettings({
+    String? schoolName,
+    String? schoolAddress,
+    String? schoolPhone,
+    String? principalName,
+    String? academicSession,
+    String? gradingScale,
+  }) {
+    if (schoolName != null) _schoolName = schoolName;
+    if (schoolAddress != null) _schoolAddress = schoolAddress;
+    if (schoolPhone != null) _schoolPhone = schoolPhone;
+    if (principalName != null) _principalName = principalName;
+    if (academicSession != null) _academicSession = academicSession;
+    if (gradingScale != null) _gradingScale = gradingScale;
+    notifyListeners();
+  }
+
   // Data lists
   List<Student> _students = [];
   List<Teacher> _teachers = [];
@@ -113,6 +149,11 @@ class SchoolState extends ChangeNotifier {
 
   void deleteTeacher(String teacherId) {
     _teachers.removeWhere((t) => t.id == teacherId);
+    notifyListeners();
+  }
+
+  void addClass(SchoolClass schoolClass) {
+    _classes.add(schoolClass);
     notifyListeners();
   }
 

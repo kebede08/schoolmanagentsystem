@@ -251,6 +251,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                         onPressed: () => _showStudentDetails(context, student),
                                       ),
                                       IconButton(
+                                        icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                        tooltip: 'Edit Student Details',
+                                        onPressed: () => _showEditStudentDialog(context, student),
+                                      ),
+                                      IconButton(
                                         icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
                                         tooltip: 'Remove Student',
                                         onPressed: () => widget.state.deleteStudent(student.id),
@@ -330,6 +335,100 @@ class _StudentsScreenState extends State<StudentsScreen> {
           Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey)),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
+      ),
+    );
+  }
+
+  void _showEditStudentDialog(BuildContext context, Student student) {
+    final nameCtrl = TextEditingController(text: student.name);
+    final rollCtrl = TextEditingController(text: student.rollNumber);
+    final gradeCtrl = TextEditingController(text: student.grade);
+    final sectionCtrl = TextEditingController(text: student.section);
+    final emailCtrl = TextEditingController(text: student.email);
+    final phoneCtrl = TextEditingController(text: student.phone);
+    final guardianCtrl = TextEditingController(text: student.guardianName);
+    final guardianPhoneCtrl = TextEditingController(text: student.guardianPhone);
+    String status = student.status;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('Edit Student: ${student.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: 480,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Full Name *')),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: TextField(controller: rollCtrl, decoration: const InputDecoration(labelText: 'Roll Number *'))),
+                      const SizedBox(width: 12),
+                      Expanded(child: TextField(controller: gradeCtrl, decoration: const InputDecoration(labelText: 'Grade'))),
+                      const SizedBox(width: 12),
+                      Expanded(child: TextField(controller: sectionCtrl, decoration: const InputDecoration(labelText: 'Section'))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Student Email')),
+                  const SizedBox(height: 12),
+                  TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Student Phone')),
+                  const SizedBox(height: 12),
+                  TextField(controller: guardianCtrl, decoration: const InputDecoration(labelText: 'Guardian Name')),
+                  const SizedBox(height: 12),
+                  TextField(controller: guardianPhoneCtrl, decoration: const InputDecoration(labelText: 'Guardian Phone')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: status,
+                    decoration: const InputDecoration(labelText: 'Enrollment Status'),
+                    items: ['Active', 'On Leave', 'Graduated'].map((s) {
+                      return DropdownMenuItem(value: s, child: Text(s));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) setDialogState(() => status = val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+              onPressed: () {
+                if (nameCtrl.text.isNotEmpty && rollCtrl.text.isNotEmpty) {
+                  final updated = student.copyWith(
+                    name: nameCtrl.text.trim(),
+                    rollNumber: rollCtrl.text.trim(),
+                    grade: gradeCtrl.text.trim(),
+                    section: sectionCtrl.text.trim(),
+                    email: emailCtrl.text.trim(),
+                    phone: phoneCtrl.text.trim(),
+                    guardianName: guardianCtrl.text.trim(),
+                    guardianPhone: guardianPhoneCtrl.text.trim(),
+                    status: status,
+                  );
+                  widget.state.updateStudent(updated);
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Student profile for ${updated.name} updated successfully.'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Save Changes'),
+            ),
+          ],
+        ),
       ),
     );
   }

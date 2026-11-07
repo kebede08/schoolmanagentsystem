@@ -1,8 +1,3 @@
-param(
-  [Parameter(ValueFromRemainingArguments = $true)]
-  [string[]]$FlutterArgs
-)
-
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $env:FLUTTER_ALREADY_LOCKED = "true"
 $env:LOCALAPPDATA = "$scriptDir\.localappdata"
@@ -16,5 +11,4 @@ $env:FLUTTER_ROOT = "C:\flutter"
   "C:\flutter\bin\cache\flutter_tools.snapshot" `
   --suppress-analytics `
   --no-version-check `
-  @FlutterArgs
-
+  $args

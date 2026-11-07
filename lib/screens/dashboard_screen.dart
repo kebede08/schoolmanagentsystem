@@ -40,7 +40,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Here is what is happening across EduPulse Academy today.',
+                    'Here is what is happening across ${state.schoolName} today.',
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,

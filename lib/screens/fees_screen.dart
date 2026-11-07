@@ -191,8 +191,17 @@ class _FeesScreenState extends State<FeesScreen> {
                                 DataCell(Text('${inv.dueDate.year}-${inv.dueDate.month.toString().padLeft(2, '0')}-${inv.dueDate.day.toString().padLeft(2, '0')}')),
                                 DataCell(StatusBadge.fee(inv.status)),
                                 DataCell(
-                                  inv.status != FeeStatus.paid
-                                      ? ElevatedButton(
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.receipt_outlined, size: 18),
+                                        tooltip: 'View Official Receipt',
+                                        onPressed: () => _showReceiptDialog(context, inv),
+                                      ),
+                                      if (inv.status != FeeStatus.paid) ...[
+                                        const SizedBox(width: 4),
+                                        ElevatedButton(
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             foregroundColor: Colors.white,
@@ -201,8 +210,10 @@ class _FeesScreenState extends State<FeesScreen> {
                                           ),
                                           onPressed: () => _showRecordPaymentDialog(context, inv),
                                           child: const Text('Collect', style: TextStyle(fontSize: 12)),
-                                        )
-                                      : const Icon(Icons.check, color: AppColors.success, size: 20),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
                               ],
                             );
@@ -211,6 +222,153 @@ class _FeesScreenState extends State<FeesScreen> {
                       ),
                     ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceiptDialog(BuildContext context, FeeInvoice inv) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: 580,
+          padding: const EdgeInsets.all(28),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.receipt_long, color: Colors.white, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.state.schoolName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(widget.state.schoolAddress, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                          ],
+                        ),
+                      ],
+                    ),
+                    StatusBadge.fee(inv.status),
+                  ],
+                ),
+                const Divider(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('BILLED TO:', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 2),
+                        Text(inv.studentName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Grade ${inv.grade} • ID: ${inv.studentId}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('RECEIPT #: ${inv.invoiceNumber}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        const SizedBox(height: 2),
+                        Text('Date: ${inv.paymentDate != null ? "${inv.paymentDate!.year}-${inv.paymentDate!.month.toString().padLeft(2, '0')}-${inv.paymentDate!.day.toString().padLeft(2, '0')}" : "Pending"}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Text('Method: ${inv.paymentMethod}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(inv.feeType, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                      Text('\$${inv.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total Billed:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text('\$${inv.amount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Amount Paid:', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    Text('\$${inv.paidAmount.toStringAsFixed(2)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.success)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Outstanding Balance:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    Text('\$${inv.balance.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.danger)),
+                  ],
+                ),
+                const Divider(height: 28),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Verified by Bursar Office\nOfficial Electronic Record', style: TextStyle(fontSize: 10, color: Colors.grey, fontStyle: FontStyle.italic)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.success, width: 1.5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        inv.status == FeeStatus.paid ? 'PAID & VERIFIED' : 'PARTIAL / PENDING',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: inv.status == FeeStatus.paid ? AppColors.success : AppColors.warning,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.print, size: 16),
+            label: const Text('Print Receipt'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Receipt ${inv.invoiceNumber} printed successfully.'), backgroundColor: AppColors.success),
+              );
+            },
           ),
         ],
       ),

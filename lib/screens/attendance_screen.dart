@@ -3,6 +3,7 @@ import '../services/school_state.dart';
 import '../models/attendance.dart';
 import '../theme/app_theme.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/biometric_attendance_dialog.dart';
 
 class AttendanceScreen extends StatefulWidget {
   final SchoolState state;
@@ -17,6 +18,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedGrade = '10';
   String _selectedSection = 'A';
+
+  void _openBiometricKiosk(BuildContext context, AttendanceRecord? record) {
+    showDialog(
+      context: context,
+      builder: (ctx) => BiometricAttendanceDialog(
+        state: widget.state,
+        grade: _selectedGrade,
+        section: _selectedSection,
+        preselectedRecord: record,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +59,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Daily Attendance Register',
+                    'Daily Attendance & Biometric Register',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -55,7 +68,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Record, verify, and report daily student presence in real-time.',
+                    'Multi-modal check-in via Optical Fingerprint, AI Face Recognition, and Security Pattern.',
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
@@ -63,24 +76,46 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                 ],
               ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.done_all, size: 18),
-                label: const Text('Mark All Present'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.success,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () {
-                  widget.state.markAllPresent(_selectedGrade, _selectedSection);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('All students in Grade $_selectedGrade-$_selectedSection marked Present'),
-                      duration: const Duration(seconds: 2),
+              Wrap(
+                spacing: 12,
+                children: [
+                  // Biometric Kiosk Launch Button
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.fingerprint, size: 20),
+                    label: const Text(
+                      'Biometric Kiosk (Finger • Face • Pattern)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                  );
-                },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => _openBiometricKiosk(context, null),
+                  ),
+
+                  // Batch Mark All Present
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.done_all, size: 18),
+                    label: const Text('Mark All Present'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.success,
+                      side: const BorderSide(color: AppColors.success, width: 1.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      widget.state.markAllPresent(_selectedGrade, _selectedSection);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('All students in Grade $_selectedGrade-$_selectedSection marked Present'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -199,7 +234,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
           const SizedBox(height: 20),
 
-          // Attendance Table
+          // Attendance Table with Biometric Verification Column
           Expanded(
             child: Card(
               child: records.isEmpty
@@ -208,7 +243,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       scrollDirection: Axis.horizontal,
                       child: SingleChildScrollView(
                         child: DataTable(
-                          columnSpacing: 28,
+                          columnSpacing: 24,
                           horizontalMargin: 20,
                           headingRowHeight: 48,
                           dataRowMinHeight: 64,
@@ -216,8 +251,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           columns: const [
                             DataColumn(label: Text('Roll No.')),
                             DataColumn(label: Text('Student Name')),
-                            DataColumn(label: Text('Status Toggle')),
-                            DataColumn(label: Text('Current Status')),
+                            DataColumn(label: Text('Biometric Scan')),
+                            DataColumn(label: Text('Manual Override')),
+                            DataColumn(label: Text('Status')),
                             DataColumn(label: Text('Remarks / Note')),
                           ],
                           rows: records.map((record) {
@@ -240,6 +276,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     ],
                                   ),
                                 ),
+                                // Biometric Instant Scan Triggers
+                                DataCell(
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.fingerprint, size: 22, color: AppColors.primary),
+                                        tooltip: 'Scan Fingerprint (${record.studentName})',
+                                        onPressed: () => _openBiometricKiosk(context, record),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.face_retouching_natural, size: 21, color: Colors.cyan),
+                                        tooltip: 'Scan Face Recognition (${record.studentName})',
+                                        onPressed: () => _openBiometricKiosk(context, record),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.grid_3x3, size: 20, color: AppColors.secondary),
+                                        tooltip: 'Verify Pattern (${record.studentName})',
+                                        onPressed: () => _openBiometricKiosk(context, record),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Manual Status Toggle
                                 DataCell(
                                   Row(
                                     children: [
@@ -298,8 +358,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       },
       borderRadius: BorderRadius.circular(6),
       child: Container(
-        width: 32,
-        height: 32,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: isSelected ? color : color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(6),

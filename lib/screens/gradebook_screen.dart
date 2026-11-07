@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/school_state.dart';
 import '../models/grade.dart';
+import '../models/student.dart';
 import '../theme/app_theme.dart';
 
 class GradebookScreen extends StatefulWidget {
@@ -51,7 +52,7 @@ class _GradebookScreenState extends State<GradebookScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Evaluate academic performance, calculate GPA, and record exam marks.',
+                    'Evaluate academic performance, calculate GPA, and generate official report cards.',
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
@@ -59,16 +60,30 @@ class _GradebookScreenState extends State<GradebookScreen> {
                   ),
                 ],
               ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Score'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () => _showAddGradeDialog(context),
+              Wrap(
+                spacing: 10,
+                children: [
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.description_outlined, size: 18),
+                    label: const Text('Generate Report Card'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => _showSelectReportCardDialog(context),
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Score'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => _showAddGradeDialog(context),
+                  ),
+                ],
               ),
             ],
           ),
@@ -131,6 +146,7 @@ class _GradebookScreenState extends State<GradebookScreen> {
                             DataColumn(label: Text('Grade')),
                             DataColumn(label: Text('GPA')),
                             DataColumn(label: Text('Teacher Remarks')),
+                            DataColumn(label: Text('Report')),
                           ],
                           rows: filtered.map((record) {
                             return DataRow(
@@ -197,6 +213,31 @@ class _GradebookScreenState extends State<GradebookScreen> {
                                     ),
                                   ),
                                 ),
+                                DataCell(
+                                  IconButton(
+                                    icon: const Icon(Icons.print_outlined, size: 18, color: AppColors.primary),
+                                    tooltip: 'View Official Report Card',
+                                    onPressed: () {
+                                      final student = widget.state.students.firstWhere(
+                                        (s) => s.name == record.studentName,
+                                        orElse: () => Student(
+                                          id: record.studentId,
+                                          name: record.studentName,
+                                          rollNumber: record.rollNumber,
+                                          grade: record.grade,
+                                          section: 'A',
+                                          email: '',
+                                          phone: '',
+                                          guardianName: 'Guardian',
+                                          guardianPhone: '',
+                                          gender: 'N/A',
+                                          dateOfBirth: DateTime(2009, 1, 1),
+                                        ),
+                                      );
+                                      _showOfficialReportCard(context, student);
+                                    },
+                                  ),
+                                ),
                               ],
                             );
                           }).toList(),
@@ -225,6 +266,277 @@ class _GradebookScreenState extends State<GradebookScreen> {
           Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
+    );
+  }
+
+  void _showSelectReportCardDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.assignment_ind, color: AppColors.primary),
+            SizedBox(width: 10),
+            Text('Select Student for Report Card'),
+          ],
+        ),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.state.students.map((student) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: AppColors.primary.withOpacity(0.15),
+                  child: Text(student.name[0], style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                ),
+                title: Text(student.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('Roll: ${student.rollNumber} • Grade ${student.grade}-${student.section}'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 14),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showOfficialReportCard(context, student);
+                },
+              );
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showOfficialReportCard(BuildContext context, Student student) {
+    final studentGrades = widget.state.grades
+        .where((g) => g.studentName == student.name && g.term == _selectedTerm)
+        .toList();
+
+    // Fallback sample subjects if specific term grades aren't recorded yet
+    final subjects = studentGrades.isNotEmpty
+        ? studentGrades
+        : [
+            GradeRecord(id: '1', studentId: student.id, studentName: student.name, rollNumber: student.rollNumber, grade: student.grade, subject: 'Mathematics', term: _selectedTerm, score: 92.0, comments: 'Excellent calculus and logical reasoning'),
+            GradeRecord(id: '2', studentId: student.id, studentName: student.name, rollNumber: student.rollNumber, grade: student.grade, subject: 'Physics', term: _selectedTerm, score: 88.5, comments: 'Solid laboratory work and theory grasp'),
+            GradeRecord(id: '3', studentId: student.id, studentName: student.name, rollNumber: student.rollNumber, grade: student.grade, subject: 'English Literature', term: _selectedTerm, score: 91.0, comments: 'Superb writing and presentation style'),
+            GradeRecord(id: '4', studentId: student.id, studentName: student.name, rollNumber: student.rollNumber, grade: student.grade, subject: 'Computer Science', term: _selectedTerm, score: 96.0, comments: 'High aptitude in algorithm development'),
+          ];
+
+    final totalScore = subjects.fold(0.0, (s, g) => s + g.score);
+    final maxTotal = subjects.fold(0.0, (s, g) => s + g.maxScore);
+    final overallPct = maxTotal > 0 ? (totalScore / maxTotal) * 100 : 0.0;
+    final overallGpa = subjects.fold(0.0, (s, g) => s + g.gpa) / subjects.length;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: 680,
+          padding: const EdgeInsets.all(28),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Report Card Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.school, color: Colors.white, size: 28),
+                        ),
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.state.schoolName.toUpperCase(),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                            ),
+                            Text(
+                              widget.state.schoolAddress,
+                              style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'OFFICIAL REPORT CARD\n${_selectedTerm.toUpperCase()} • ${widget.state.academicSession}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 32, thickness: 1.5),
+
+                // Student Meta Details Row
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.black12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _studentInfoItem('Student Name', student.name),
+                      _studentInfoItem('Roll Number', student.rollNumber),
+                      _studentInfoItem('Grade & Section', 'Grade ${student.grade}-${student.section}'),
+                      _studentInfoItem('Attendance', '${student.attendanceRate}%'),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                const Text('Academic Evaluation Summary', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 10),
+
+                // Subject Results Table
+                Table(
+                  border: TableBorder.all(color: Colors.black12, borderRadius: BorderRadius.circular(8)),
+                  columnWidths: const {
+                    0: FlexColumnWidth(3),
+                    1: FlexColumnWidth(1.5),
+                    2: FlexColumnWidth(1.5),
+                    3: FlexColumnWidth(1.2),
+                    4: FlexColumnWidth(1.2),
+                    5: FlexColumnWidth(3),
+                  },
+                  children: [
+                    TableRow(
+                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.08)),
+                      children: const [
+                        Padding(padding: EdgeInsets.all(8), child: Text('Subject', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Max', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Score', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Grade', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('GPA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                        Padding(padding: EdgeInsets.all(8), child: Text('Remarks', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                      ],
+                    ),
+                    ...subjects.map((s) {
+                      return TableRow(
+                        children: [
+                          Padding(padding: const EdgeInsets.all(8), child: Text(s.subject, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text('${s.maxScore.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text('${s.score.toStringAsFixed(1)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(s.letterGrade, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(s.gpa.toStringAsFixed(1), style: const TextStyle(fontSize: 12))),
+                          Padding(padding: const EdgeInsets.all(8), child: Text(s.comments.isEmpty ? 'Satisfactory' : s.comments, style: const TextStyle(fontSize: 11, color: Colors.grey))),
+                        ],
+                      );
+                    }).toList(),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                // Overall Cumulative Summary Bar
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _summaryStat('Total Marks', '${totalScore.toStringAsFixed(0)} / ${maxTotal.toStringAsFixed(0)}'),
+                      _summaryStat('Overall %', '${overallPct.toStringAsFixed(1)}%'),
+                      _summaryStat('Term GPA', overallGpa.toStringAsFixed(2)),
+                      _summaryStat('Result', 'PROMOTED / PASS', color: AppColors.success),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Official Signatures
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _signatureBox('Class Teacher Signature', 'Prof. Eleanor Hughes'),
+                    _signatureBox('Principal / Head of School', widget.state.principalName),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.print, size: 16),
+            label: const Text('Print Official Report'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Report card for ${student.name} dispatched to printer/PDF export.'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _studentInfoItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 2),
+        Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+      ],
+    );
+  }
+
+  Widget _summaryStat(String label, String value, {Color? color}) {
+    return Column(
+      children: [
+        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        const SizedBox(height: 2),
+        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color ?? AppColors.primary)),
+      ],
+    );
+  }
+
+  Widget _signatureBox(String title, String signatory) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 180,
+          height: 1,
+          color: Colors.grey,
+        ),
+        const SizedBox(height: 6),
+        Text(signatory, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+      ],
     );
   }
 
@@ -289,4 +601,3 @@ class _GradebookScreenState extends State<GradebookScreen> {
     );
   }
 }
-

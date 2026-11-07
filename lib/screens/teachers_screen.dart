@@ -233,10 +233,19 @@ class _TeachersScreenState extends State<TeachersScreen> {
                                     ),
                                   ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
-                                  tooltip: 'Delete',
-                                  onPressed: () => widget.state.deleteTeacher(teacher.id),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                      tooltip: 'Edit Faculty Info',
+                                      onPressed: () => _showEditTeacherDialog(context, teacher),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                                      tooltip: 'Delete',
+                                      onPressed: () => widget.state.deleteTeacher(teacher.id),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -250,6 +259,93 @@ class _TeachersScreenState extends State<TeachersScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showEditTeacherDialog(BuildContext context, Teacher teacher) {
+    final nameCtrl = TextEditingController(text: teacher.name);
+    final empCtrl = TextEditingController(text: teacher.employeeId);
+    final deptCtrl = TextEditingController(text: teacher.department);
+    final subjCtrl = TextEditingController(text: teacher.subject);
+    final qualCtrl = TextEditingController(text: teacher.qualification);
+    final emailCtrl = TextEditingController(text: teacher.email);
+    final phoneCtrl = TextEditingController(text: teacher.phone);
+    String status = teacher.status;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Text('Edit Faculty: ${teacher.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: SizedBox(
+            width: 450,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Full Name *')),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: TextField(controller: empCtrl, decoration: const InputDecoration(labelText: 'Employee ID'))),
+                      const SizedBox(width: 12),
+                      Expanded(child: TextField(controller: deptCtrl, decoration: const InputDecoration(labelText: 'Department'))),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: subjCtrl, decoration: const InputDecoration(labelText: 'Subject Specialization *')),
+                  const SizedBox(height: 12),
+                  TextField(controller: qualCtrl, decoration: const InputDecoration(labelText: 'Qualification *')),
+                  const SizedBox(height: 12),
+                  TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: 'Work Email')),
+                  const SizedBox(height: 12),
+                  TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Phone')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: status,
+                    decoration: const InputDecoration(labelText: 'Faculty Status'),
+                    items: ['Active', 'On Leave'].map((s) {
+                      return DropdownMenuItem(value: s, child: Text(s));
+                    }).toList(),
+                    onChanged: (val) {
+                      if (val != null) setDialogState(() => status = val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+              onPressed: () {
+                if (nameCtrl.text.isNotEmpty && subjCtrl.text.isNotEmpty) {
+                  final updated = teacher.copyWith(
+                    name: nameCtrl.text.trim(),
+                    employeeId: empCtrl.text.trim(),
+                    department: deptCtrl.text.trim(),
+                    subject: subjCtrl.text.trim(),
+                    qualification: qualCtrl.text.trim(),
+                    email: emailCtrl.text.trim(),
+                    phone: phoneCtrl.text.trim(),
+                    status: status,
+                  );
+                  widget.state.updateTeacher(updated);
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Faculty profile for ${updated.name} updated successfully.'),
+                      backgroundColor: AppColors.success,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Save Changes'),
+            ),
+          ],
+        ),
       ),
     );
   }

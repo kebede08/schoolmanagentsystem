@@ -73,21 +73,23 @@ class SidebarNav extends StatelessWidget {
                 ),
                 if (!isCollapsed) ...[
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'EduPulse',
-                          style: TextStyle(
-                            fontSize: 16,
+                          state.schoolName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             letterSpacing: 0.3,
                           ),
                         ),
-                        Text(
+                        const Text(
                           'School Portal',
                           style: TextStyle(
                             fontSize: 11,
@@ -113,13 +115,13 @@ class SidebarNav extends StatelessWidget {
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 14, color: Color(0xFF38BDF8)),
-                    SizedBox(width: 8),
+                    const Icon(Icons.calendar_today, size: 14, color: Color(0xFF38BDF8)),
+                    const SizedBox(width: 8),
                     Text(
-                      'Session: 2026-2027',
-                      style: TextStyle(
+                      'Session: ${state.academicSession}',
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Color(0xFFE2E8F0),
                         fontWeight: FontWeight.w500,

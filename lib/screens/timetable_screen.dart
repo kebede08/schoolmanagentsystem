@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/school_state.dart';
+import '../models/timetable.dart';
 import '../theme/app_theme.dart';
 
 class TimetableScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class TimetableScreen extends StatefulWidget {
 
 class _TimetableScreenState extends State<TimetableScreen> {
   String _selectedDay = 'Monday';
+  String _selectedGrade = '10';
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,42 @@ class _TimetableScreenState extends State<TimetableScreen> {
                       fontSize: 13,
                       color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                     ),
+                  ),
+                ],
+              ),
+              Wrap(
+                spacing: 12,
+                children: [
+                  // Grade level dropdown
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                      borderRadius: BorderRadius.circular(10),
+                      color: isDark ? AppColors.darkCard : Colors.white,
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedGrade,
+                        items: ['10', '11', '12'].map((g) {
+                          return DropdownMenuItem(value: g, child: Text('Grade $g Schedule'));
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedGrade = val);
+                        },
+                      ),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('Add Period'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => _showAddPeriodDialog(context, schedule),
                   ),
                 ],
               ),
@@ -182,5 +220,67 @@ class _TimetableScreenState extends State<TimetableScreen> {
       ),
     );
   }
-}
 
+  void _showAddPeriodDialog(BuildContext context, DaySchedule schedule) {
+    final numCtrl = TextEditingController(text: '${schedule.periods.length + 1}');
+    final timeCtrl = TextEditingController(text: '02:35 - 03:20');
+    final subjCtrl = TextEditingController();
+    final teacherCtrl = TextEditingController();
+    final roomCtrl = TextEditingController(text: 'Room 301');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Add Period Slot (${schedule.dayOfWeek})'),
+        content: SizedBox(
+          width: 440,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: TextField(controller: numCtrl, decoration: const InputDecoration(labelText: 'Period #'))),
+                  const SizedBox(width: 12),
+                  Expanded(flex: 2, child: TextField(controller: timeCtrl, decoration: const InputDecoration(labelText: 'Time Range (e.g. 02:35 - 03:20)'))),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(controller: subjCtrl, decoration: const InputDecoration(labelText: 'Subject Name *')),
+              const SizedBox(height: 12),
+              TextField(controller: teacherCtrl, decoration: const InputDecoration(labelText: 'Teacher / Instructor *')),
+              const SizedBox(height: 12),
+              TextField(controller: roomCtrl, decoration: const InputDecoration(labelText: 'Classroom / Lab *')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () {
+              if (subjCtrl.text.isNotEmpty && teacherCtrl.text.isNotEmpty) {
+                final pNum = int.tryParse(numCtrl.text.trim()) ?? (schedule.periods.length + 1);
+                setState(() {
+                  schedule.periods.add(
+                    PeriodSlot(
+                      periodNumber: pNum,
+                      timeRange: timeCtrl.text.trim(),
+                      subject: subjCtrl.text.trim(),
+                      teacher: teacherCtrl.text.trim(),
+                      room: roomCtrl.text.trim(),
+                    ),
+                  );
+                });
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Period $pNum added to ${schedule.dayOfWeek} schedule.'), backgroundColor: AppColors.success),
+                );
+              }
+            },
+            child: const Text('Save Period'),
+          ),
+        ],
+      ),
+    );
+  }
+}
