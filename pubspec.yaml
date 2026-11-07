@@ -1,5 +1,5 @@
 name: school_management
-description: "School Management System Web Application in Flutter"
+description: "EduPulse School Management System for Web and Android in Flutter"
 publish_to: "none"
 version: 1.0.0+1
 
@@ -9,6 +9,10 @@ environment:
 
 dependencies:
   flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
     sdk: flutter
 
 flutter:

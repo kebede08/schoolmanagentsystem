@@ -145,7 +145,12 @@ class SidebarNav extends StatelessWidget {
                 final isSelected = state.selectedNavIndex == index;
 
                 return InkWell(
-                  onTap: () => state.setNavIndex(index),
+                  onTap: () {
+                    state.setNavIndex(index);
+                    if (Scaffold.maybeOf(context)?.isDrawerOpen ?? false) {
+                      Navigator.of(context).pop();
+                    }
+                  },
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
                     padding: EdgeInsets.symmetric(
