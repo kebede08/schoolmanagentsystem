@@ -367,13 +367,22 @@ class DashboardScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Class Enrollment & Capacity',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.darkText : AppColors.lightText,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Class Enrollment & Capacity',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? AppColors.darkText : AppColors.lightText,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => state.setNavIndex(3),
+                                child: const Text('View All'),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           ...state.classes.map((cls) {

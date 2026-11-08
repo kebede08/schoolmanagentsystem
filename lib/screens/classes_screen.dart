@@ -268,10 +268,25 @@ class ClassesScreen extends StatelessWidget {
                                       }).toList(),
                                     ),
                                   ),
-                                  TextButton.icon(
-                                    icon: const Icon(Icons.people, size: 16),
-                                    label: const Text('View Roster'),
-                                    onPressed: () => _showClassRosterDialog(context, cls),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextButton.icon(
+                                        icon: const Icon(Icons.people, size: 16),
+                                        label: const Text('View Roster'),
+                                        onPressed: () => _showClassRosterDialog(context, cls),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                        tooltip: 'Remove Section',
+                                        onPressed: () {
+                                          state.deleteClass(cls.id);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Section ${cls.displayName} removed.')),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

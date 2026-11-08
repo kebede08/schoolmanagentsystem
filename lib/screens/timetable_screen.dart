@@ -276,6 +276,19 @@ class _TimetableScreenState extends State<TimetableScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 6),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                          tooltip: 'Remove Period',
+                          onPressed: () {
+                            setState(() {
+                              schedule.periods.removeWhere((item) => item.periodNumber == p.periodNumber);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Period ${p.periodNumber} removed from ${schedule.dayOfWeek}.')),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),

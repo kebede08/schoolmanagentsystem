@@ -279,6 +279,16 @@ class _FeesScreenState extends State<FeesScreen> {
                                           child: const Text('Collect', style: TextStyle(fontSize: 12)),
                                         ),
                                       ],
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                        tooltip: 'Delete Invoice',
+                                        onPressed: () {
+                                          widget.state.deleteInvoice(inv.id);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Invoice ${inv.invoiceNumber} deleted.')),
+                                          );
+                                        },
+                                      ),
                                     ],
                                   ),
                                 ),

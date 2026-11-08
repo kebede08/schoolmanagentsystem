@@ -371,20 +371,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (val) => widget.state.toggleDarkMode(),
                   ),
                   const Divider(height: 24),
-                  Row(
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 10,
                     children: [
                       OutlinedButton.icon(
                         icon: const Icon(Icons.download, size: 18),
                         label: const Text('Export JSON Data Backup'),
                         onPressed: _exportJsonBackup,
                       ),
-                      const SizedBox(width: 12),
                       OutlinedButton.icon(
-                        icon: const Icon(Icons.refresh, size: 18),
-                        label: const Text('Reload Default Mock Data'),
+                        icon: const Icon(Icons.refresh, size: 18, color: AppColors.warning),
+                        label: const Text('Reset to Default Demo Data', style: TextStyle(color: AppColors.warning)),
                         onPressed: () {
+                          widget.state.resetToDefaultData();
+                          _nameCtrl.text = widget.state.schoolName;
+                          _principalCtrl.text = widget.state.principalName;
+                          _addressCtrl.text = widget.state.schoolAddress;
+                          _phoneCtrl.text = widget.state.schoolPhone;
+                          _sessionCtrl.text = widget.state.academicSession;
+                          _gradingCtrl.text = widget.state.gradingScale;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Institutional dataset active and synchronized.')),
+                            const SnackBar(
+                              content: Text('All records and settings reset to default demo dataset.'),
+                              backgroundColor: AppColors.primary,
+                            ),
                           );
                         },
                       ),

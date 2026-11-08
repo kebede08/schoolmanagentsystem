@@ -275,28 +275,43 @@ class _GradebookScreenState extends State<GradebookScreen> {
                                   ),
                                 ),
                                 DataCell(
-                                  IconButton(
-                                    icon: const Icon(Icons.print_outlined, size: 18, color: AppColors.primary),
-                                    tooltip: 'View Official Report Card',
-                                    onPressed: () {
-                                      final student = widget.state.students.firstWhere(
-                                        (s) => s.name == record.studentName,
-                                        orElse: () => Student(
-                                          id: record.studentId,
-                                          name: record.studentName,
-                                          rollNumber: record.rollNumber,
-                                          grade: record.grade,
-                                          section: 'A',
-                                          email: '',
-                                          phone: '',
-                                          guardianName: 'Guardian',
-                                          guardianPhone: '',
-                                          gender: 'N/A',
-                                          dateOfBirth: DateTime(2009, 1, 1),
-                                        ),
-                                      );
-                                      _showOfficialReportCard(context, student);
-                                    },
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.print_outlined, size: 18, color: AppColors.primary),
+                                        tooltip: 'View Official Report Card',
+                                        onPressed: () {
+                                          final student = widget.state.students.firstWhere(
+                                            (s) => s.name == record.studentName,
+                                            orElse: () => Student(
+                                              id: record.studentId,
+                                              name: record.studentName,
+                                              rollNumber: record.rollNumber,
+                                              grade: record.grade,
+                                              section: 'A',
+                                              email: '',
+                                              phone: '',
+                                              guardianName: 'Guardian',
+                                              guardianPhone: '',
+                                              gender: 'N/A',
+                                              dateOfBirth: DateTime(2009, 1, 1),
+                                            ),
+                                          );
+                                          _showOfficialReportCard(context, student);
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                                        tooltip: 'Delete Score Entry',
+                                        onPressed: () {
+                                          widget.state.deleteGrade(record.id);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Score for ${record.studentName} (${record.subject}) deleted.')),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],

@@ -18,6 +18,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   DateTime _selectedDate = DateTime.now();
   String _selectedGrade = '10';
   String _selectedSection = 'A';
+  String _statusFilter = 'All';
 
   void _openBiometricKiosk(BuildContext context, AttendanceRecord? record, [BiometricMode mode = BiometricMode.fingerprint]) {
     showDialog(
@@ -36,16 +37,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final records = widget.state.attendance.where((a) {
+    final allForClass = widget.state.attendance.where((a) {
       return a.grade == _selectedGrade && a.section == _selectedSection;
     }).toList();
 
-    final presentCount = records.where((r) => r.status == AttendanceStatus.present).length;
-    final lateCount = records.where((r) => r.status == AttendanceStatus.late).length;
-    final absentCount = records.where((r) => r.status == AttendanceStatus.absent).length;
-    final excusedCount = records.where((r) => r.status == AttendanceStatus.excused).length;
-    final totalCount = records.length;
+    final presentCount = allForClass.where((r) => r.status == AttendanceStatus.present).length;
+    final lateCount = allForClass.where((r) => r.status == AttendanceStatus.late).length;
+    final absentCount = allForClass.where((r) => r.status == AttendanceStatus.absent).length;
+    final excusedCount = allForClass.where((r) => r.status == AttendanceStatus.excused).length;
+    final totalCount = allForClass.length;
     final attendanceRate = totalCount > 0 ? ((presentCount + lateCount) / totalCount) * 100 : 0.0;
+
+    final records = allForClass.where((r) {
+      if (_statusFilter == 'Present') return r.status == AttendanceStatus.present;
+      if (_statusFilter == 'Late') return r.status == AttendanceStatus.late;
+      if (_statusFilter == 'Absent') return r.status == AttendanceStatus.absent;
+      if (_statusFilter == 'Excused') return r.status == AttendanceStatus.excused;
+      return true;
+    }).toList();
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = screenWidth < 800;
@@ -283,16 +292,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     ],
                   ),
 
-                  // Quick Stats Badges
+                  // Quick Stats Badges (Interactive Filters)
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      _summaryPill('Present: $presentCount', AppColors.success),
-                      _summaryPill('Late: $lateCount', AppColors.warning),
-                      _summaryPill('Absent: $absentCount', AppColors.danger),
-                      _summaryPill('Excused: $excusedCount', AppColors.secondary),
+                      _summaryPill('All', Colors.blueGrey, 'All'),
+                      _summaryPill('Present: $presentCount', AppColors.success, 'Present'),
+                      _summaryPill('Late: $lateCount', AppColors.warning, 'Late'),
+                      _summaryPill('Absent: $absentCount', AppColors.danger, 'Absent'),
+                      _summaryPill('Excused: $excusedCount', AppColors.secondary, 'Excused'),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
@@ -415,16 +425,32 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _summaryPill(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 12),
+  Widget _summaryPill(String text, Color color, [String? filterKey]) {
+    final isSelected = filterKey != null && _statusFilter == filterKey;
+    return InkWell(
+      onTap: filterKey != null
+          ? () {
+              setState(() {
+                _statusFilter = _statusFilter == filterKey ? 'All' : filterKey;
+              });
+            }
+          : null,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? color : color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected ? Border.all(color: color, width: 1.5) : null,
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : color,
+            fontSize: 12,
+          ),
+        ),
       ),
     );
   }

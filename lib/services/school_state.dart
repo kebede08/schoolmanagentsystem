@@ -157,6 +157,11 @@ class SchoolState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void deleteClass(String classId) {
+    _classes.removeWhere((c) => c.id == classId);
+    notifyListeners();
+  }
+
   // Attendance Actions
   void markAttendance(String recordId, AttendanceStatus newStatus) {
     final idx = _attendance.indexWhere((a) => a.id == recordId);
@@ -178,6 +183,11 @@ class SchoolState extends ChangeNotifier {
   // Fee Actions
   void addInvoice(FeeInvoice invoice) {
     _invoices.insert(0, invoice);
+    notifyListeners();
+  }
+
+  void deleteInvoice(String invoiceId) {
+    _invoices.removeWhere((inv) => inv.id == invoiceId);
     notifyListeners();
   }
 
@@ -203,9 +213,50 @@ class SchoolState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void deleteGrade(String gradeId) {
+    _grades.removeWhere((g) => g.id == gradeId);
+    notifyListeners();
+  }
+
   // Notice Actions
   void addNotice(Notice notice) {
     _notices.insert(0, notice);
+    notifyListeners();
+  }
+
+  void deleteNotice(String noticeId) {
+    _notices.removeWhere((n) => n.id == noticeId);
+    notifyListeners();
+  }
+
+  // Timetable Actions
+  void addPeriodToSchedule(String dayOfWeek, PeriodSlot period) {
+    final sched = _weeklySchedule.firstWhere(
+      (s) => s.dayOfWeek.toLowerCase() == dayOfWeek.toLowerCase(),
+      orElse: () => _weeklySchedule.first,
+    );
+    sched.periods.add(period);
+    notifyListeners();
+  }
+
+  void deletePeriodFromSchedule(String dayOfWeek, int periodNumber) {
+    final sched = _weeklySchedule.firstWhere(
+      (s) => s.dayOfWeek.toLowerCase() == dayOfWeek.toLowerCase(),
+      orElse: () => _weeklySchedule.first,
+    );
+    sched.periods.removeWhere((p) => p.periodNumber == periodNumber);
+    notifyListeners();
+  }
+
+  // Reset & Restore
+  void resetToDefaultData() {
+    _initializeData();
+    _schoolName = 'EduPulse Academy';
+    _academicSession = '2026-2027';
+    _principalName = 'Dr. Sarah Sterling';
+    _schoolAddress = '450 University Avenue, Education District, Innovation Park';
+    _schoolPhone = '+1 (555) 789-2000';
+    _gradingScale = 'GPA 4.0 Standard Scale';
     notifyListeners();
   }
 

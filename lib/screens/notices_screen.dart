@@ -227,6 +227,17 @@ class _NoticesScreenState extends State<NoticesScreen> {
                               'Published by ${notice.author}',
                               style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic, color: Colors.grey),
                             ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.grey),
+                              tooltip: 'Delete Announcement',
+                              onPressed: () {
+                                widget.state.deleteNotice(notice.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Notice deleted.')),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ],
