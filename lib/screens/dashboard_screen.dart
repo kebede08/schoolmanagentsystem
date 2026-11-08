@@ -17,64 +17,117 @@ class DashboardScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1100;
 
+    final isMobile = screenWidth < 750;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Header & Quick Action Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome back, ${state.currentRole}',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          // Welcome Header & Quick Action Row (Responsive)
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome back, ${state.currentRole}',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Here is what is happening across ${state.schoolName} today.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Here is what is happening across ${state.schoolName} today.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
-                ],
-              ),
-              Wrap(
-                spacing: 10,
-                children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.fact_check_outlined, size: 16),
-                    label: const Text('Take Attendance'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => state.setNavIndex(4), // Attendance
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.fact_check_outlined, size: 16),
+                  label: const Text('Take Attendance'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.person_add_alt_1, size: 16),
-                    label: const Text('Enroll Student'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => state.setNavIndex(1), // Students
+                  onPressed: () => state.setNavIndex(4), // Attendance
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.person_add_alt_1, size: 16),
+                  label: const Text('Enroll Student'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                ],
-              ),
-            ],
-          ),
+                  onPressed: () => state.setNavIndex(1), // Students
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Welcome back, ${state.currentRole}',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Here is what is happening across ${state.schoolName} today.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.fact_check_outlined, size: 16),
+                      label: const Text('Take Attendance'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => state.setNavIndex(4), // Attendance
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.person_add_alt_1, size: 16),
+                      label: const Text('Enroll Student'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => state.setNavIndex(1), // Students
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 24),
 

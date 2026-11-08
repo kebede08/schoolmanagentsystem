@@ -19,7 +19,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String _selectedGrade = '10';
   String _selectedSection = 'A';
 
-  void _openBiometricKiosk(BuildContext context, AttendanceRecord? record) {
+  void _openBiometricKiosk(BuildContext context, AttendanceRecord? record, [BiometricMode mode = BiometricMode.fingerprint]) {
     showDialog(
       context: context,
       builder: (ctx) => BiometricAttendanceDialog(
@@ -27,6 +27,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         grade: _selectedGrade,
         section: _selectedSection,
         preselectedRecord: record,
+        initialMode: mode,
       ),
     );
   }
@@ -46,186 +47,264 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final totalCount = records.length;
     final attendanceRate = totalCount > 0 ? ((presentCount + lateCount) / totalCount) * 100 : 0.0;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 800;
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Daily Attendance & Biometric Register',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          // Header Row (Adaptive for Web and Android)
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Daily Attendance & Biometrics',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Multi-modal check-in via Optical Fingerprint, AI Face Recognition, and Security Pattern.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Fingerprint, AI Face Recognition, and Pattern Lock.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
-                ],
-              ),
-              Wrap(
-                spacing: 12,
-                children: [
-                  // Biometric Kiosk Launch Button
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.fingerprint, size: 20),
-                    label: const Text(
-                      'Biometric Kiosk (Finger • Face • Pattern)',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => _openBiometricKiosk(context, null),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.fingerprint, size: 18),
+                  label: const Text(
+                    'Biometric Kiosk',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => _openBiometricKiosk(context, null),
+                ),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.done_all, size: 18),
+                  label: const Text('Mark All Present', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.success,
+                    side: const BorderSide(color: AppColors.success, width: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () {
+                    widget.state.markAllPresent(_selectedGrade, _selectedSection);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('All students in Grade $_selectedGrade-$_selectedSection marked Present'),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Daily Attendance & Biometric Register',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Multi-modal check-in via Optical Fingerprint, AI Face Recognition, and Security Pattern.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    // Biometric Kiosk Launch Button
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.fingerprint, size: 20),
+                      label: const Text(
+                        'Biometric Kiosk (Finger • Face • Pattern)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _openBiometricKiosk(context, null),
+                    ),
 
-                  // Batch Mark All Present
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.done_all, size: 18),
-                    label: const Text('Mark All Present'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.success,
-                      side: const BorderSide(color: AppColors.success, width: 1.5),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    // Batch Mark All Present
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.done_all, size: 18),
+                      label: const Text('Mark All Present'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.success,
+                        side: const BorderSide(color: AppColors.success, width: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () {
+                        widget.state.markAllPresent(_selectedGrade, _selectedSection);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('All students in Grade $_selectedGrade-$_selectedSection marked Present'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
-                    onPressed: () {
-                      widget.state.markAllPresent(_selectedGrade, _selectedSection);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('All students in Grade $_selectedGrade-$_selectedSection marked Present'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
-          // Controls & Filters Bar
+          // Controls & Filters Bar (Responsive Wrap for Mobile & Web)
           Card(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.spaceBetween,
                 children: [
-                  // Date Picker Button
-                  InkWell(
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime(2026, 1, 1),
-                        lastDate: DateTime(2027, 12, 31),
-                      );
-                      if (picked != null) {
-                        setState(() => _selectedDate = picked);
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Date Picker Button
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _selectedDate,
+                            firstDate: DateTime(2026, 1, 1),
+                            lastDate: DateTime(2027, 12, 31),
+                          );
+                          if (picked != null) {
+                            setState(() => _selectedDate = picked);
+                          }
+                        },
                         borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
+                              const SizedBox(width: 8),
+                              Text(
+                                '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}',
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+
+                      const SizedBox(width: 10),
+
+                      // Grade Selector
+                      DropdownButtonHideUnderline(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: _selectedGrade,
+                            items: ['10', '11', '12'].map((g) {
+                              return DropdownMenuItem(value: g, child: Text('Grade $g'));
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedGrade = val);
+                            },
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      // Section Selector
+                      DropdownButtonHideUnderline(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: DropdownButton<String>(
+                            value: _selectedSection,
+                            items: ['A', 'B'].map((s) {
+                              return DropdownMenuItem(value: s, child: Text('Sec $s'));
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) setState(() => _selectedSection = val);
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const SizedBox(width: 16),
-
-                  // Grade Selector
-                  DropdownButtonHideUnderline(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButton<String>(
-                        value: _selectedGrade,
-                        items: ['10', '11', '12'].map((g) {
-                          return DropdownMenuItem(value: g, child: Text('Grade $g'));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedGrade = val);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  // Section Selector
-                  DropdownButtonHideUnderline(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: DropdownButton<String>(
-                        value: _selectedSection,
-                        items: ['A', 'B'].map((s) {
-                          return DropdownMenuItem(value: s, child: Text('Section $s'));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedSection = val);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  const Spacer(),
 
                   // Quick Stats Badges
-                  _summaryPill('Present: $presentCount', AppColors.success),
-                  const SizedBox(width: 8),
-                  _summaryPill('Late: $lateCount', AppColors.warning),
-                  const SizedBox(width: 8),
-                  _summaryPill('Absent: $absentCount', AppColors.danger),
-                  const SizedBox(width: 8),
-                  _summaryPill('Excused: $excusedCount', AppColors.secondary),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'Rate: ${attendanceRate.toStringAsFixed(1)}%',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12),
-                    ),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _summaryPill('Present: $presentCount', AppColors.success),
+                      _summaryPill('Late: $lateCount', AppColors.warning),
+                      _summaryPill('Absent: $absentCount', AppColors.danger),
+                      _summaryPill('Excused: $excusedCount', AppColors.secondary),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Rate: ${attendanceRate.toStringAsFixed(1)}%',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -284,17 +363,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                       IconButton(
                                         icon: const Icon(Icons.fingerprint, size: 22, color: AppColors.primary),
                                         tooltip: 'Scan Fingerprint (${record.studentName})',
-                                        onPressed: () => _openBiometricKiosk(context, record),
+                                        onPressed: () => _openBiometricKiosk(context, record, BiometricMode.fingerprint),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.face_retouching_natural, size: 21, color: Colors.cyan),
                                         tooltip: 'Scan Face Recognition (${record.studentName})',
-                                        onPressed: () => _openBiometricKiosk(context, record),
+                                        onPressed: () => _openBiometricKiosk(context, record, BiometricMode.faceRecognition),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.grid_3x3, size: 20, color: AppColors.secondary),
                                         tooltip: 'Verify Pattern (${record.studentName})',
-                                        onPressed: () => _openBiometricKiosk(context, record),
+                                        onPressed: () => _openBiometricKiosk(context, record, BiometricMode.patternLock),
                                       ),
                                     ],
                                   ),

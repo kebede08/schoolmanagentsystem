@@ -151,106 +151,158 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 750;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'School & Portal Settings',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Portal Settings',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Configure institutional details, academic parameters, and system preferences.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.save, size: 18),
-                label: const Text('Save Settings'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: _saveSettings,
+                const SizedBox(height: 4),
+                Text(
+                  'Configure institutional and academic details.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.save, size: 18),
+              label: const Text('Save Settings', style: TextStyle(fontSize: 13)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-            ],
-          ),
+              onPressed: _saveSettings,
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'School & Portal Settings',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Configure institutional details, academic parameters, and system preferences.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.save, size: 18),
+                  label: const Text('Save Settings'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: _saveSettings,
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 24),
 
           // School Info Card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Institutional Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _nameCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Institution Name *',
+                  if (isMobile) ...[
+                    TextField(
+                      controller: _nameCtrl,
+                      decoration: const InputDecoration(labelText: 'Institution Name *'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _principalCtrl,
+                      decoration: const InputDecoration(labelText: 'Principal / Headmaster *'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _addressCtrl,
+                      decoration: const InputDecoration(labelText: 'Campus Address *'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _phoneCtrl,
+                      decoration: const InputDecoration(labelText: 'Contact Phone *'),
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _nameCtrl,
+                            decoration: const InputDecoration(labelText: 'Institution Name *'),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: _principalCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Principal / Headmaster *',
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: _principalCtrl,
+                            decoration: const InputDecoration(labelText: 'Principal / Headmaster *'),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextField(
-                          controller: _addressCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Campus Address *',
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            controller: _addressCtrl,
+                            decoration: const InputDecoration(labelText: 'Campus Address *'),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        flex: 1,
-                        child: TextField(
-                          controller: _phoneCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Contact Phone *',
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 1,
+                          child: TextField(
+                            controller: _phoneCtrl,
+                            decoration: const InputDecoration(labelText: 'Contact Phone *'),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -261,33 +313,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Academic Configuration Card
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(isMobile ? 16 : 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text('Academic Configuration', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _sessionCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Active Academic Session *',
+                  if (isMobile) ...[
+                    TextField(
+                      controller: _sessionCtrl,
+                      decoration: const InputDecoration(labelText: 'Active Academic Session *'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _gradingCtrl,
+                      decoration: const InputDecoration(labelText: 'Grading Standard *'),
+                    ),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _sessionCtrl,
+                            decoration: const InputDecoration(labelText: 'Active Academic Session *'),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextField(
-                          controller: _gradingCtrl,
-                          decoration: const InputDecoration(
-                            labelText: 'Grading Standard *',
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextField(
+                            controller: _gradingCtrl,
+                            decoration: const InputDecoration(labelText: 'Grading Standard *'),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

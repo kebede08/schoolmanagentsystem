@@ -16,6 +16,7 @@ class BiometricAttendanceDialog extends StatefulWidget {
   final String grade;
   final String section;
   final AttendanceRecord? preselectedRecord;
+  final BiometricMode initialMode;
 
   const BiometricAttendanceDialog({
     super.key,
@@ -23,6 +24,7 @@ class BiometricAttendanceDialog extends StatefulWidget {
     required this.grade,
     required this.section,
     this.preselectedRecord,
+    this.initialMode = BiometricMode.fingerprint,
   });
 
   @override
@@ -31,7 +33,7 @@ class BiometricAttendanceDialog extends StatefulWidget {
 
 class _BiometricAttendanceDialogState extends State<BiometricAttendanceDialog>
     with SingleTickerProviderStateMixin {
-  BiometricMode _activeMode = BiometricMode.fingerprint;
+  late BiometricMode _activeMode;
   late AnimationController _animCtrl;
 
   // Selected student for verification
@@ -50,6 +52,7 @@ class _BiometricAttendanceDialogState extends State<BiometricAttendanceDialog>
   @override
   void initState() {
     super.initState();
+    _activeMode = widget.initialMode;
     _animCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),

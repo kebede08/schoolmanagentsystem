@@ -59,6 +59,14 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
   bool _isSidebarCollapsed = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  int _getBottomNavIndex(int navIndex) {
+    if (navIndex == 0) return 0;
+    if (navIndex == 1) return 1;
+    if (navIndex == 4) return 2;
+    if (navIndex == 5) return 3;
+    return 4; // highlights "More" for other modules
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -75,6 +83,51 @@ class _MainLayoutScreenState extends State<MainLayoutScreen> {
                   Navigator.pop(context);
                 },
               ),
+            )
+          : null,
+      bottomNavigationBar: isMobile
+          ? NavigationBar(
+              selectedIndex: _getBottomNavIndex(widget.state.selectedNavIndex),
+              onDestinationSelected: (idx) {
+                if (idx == 0) {
+                  widget.state.setNavIndex(0);
+                } else if (idx == 1) {
+                  widget.state.setNavIndex(1);
+                } else if (idx == 2) {
+                  widget.state.setNavIndex(4);
+                } else if (idx == 3) {
+                  widget.state.setNavIndex(5);
+                } else if (idx == 4) {
+                  _scaffoldKey.currentState?.openDrawer();
+                }
+              },
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.dashboard_outlined),
+                  selectedIcon: Icon(Icons.dashboard),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.school_outlined),
+                  selectedIcon: Icon(Icons.school),
+                  label: 'Students',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.fingerprint),
+                  selectedIcon: Icon(Icons.fingerprint, color: AppColors.primary),
+                  label: 'Biometrics',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.assignment_outlined),
+                  selectedIcon: Icon(Icons.assignment),
+                  label: 'Grades',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.menu),
+                  selectedIcon: Icon(Icons.menu_open),
+                  label: 'Menu',
+                ),
+              ],
             )
           : null,
       body: Row(

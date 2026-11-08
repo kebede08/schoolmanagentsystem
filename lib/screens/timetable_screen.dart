@@ -25,97 +25,164 @@ class _TimetableScreenState extends State<TimetableScreen> {
       orElse: () => widget.state.weeklySchedule.first,
     );
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 750;
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Class Timetable & Schedule',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Timetable & Schedule',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Daily period schedules and rooms.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                    borderRadius: BorderRadius.circular(8),
+                    color: isDark ? AppColors.darkCard : Colors.white,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedGrade,
+                      items: ['10', '11', '12'].map((g) {
+                        return DropdownMenuItem(value: g, child: Text('Grade $g'));
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedGrade = val);
+                      },
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Master daily period schedules, subject timeslots, and room allocations.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Add Period', style: TextStyle(fontSize: 13)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                ],
-              ),
-              Wrap(
-                spacing: 12,
-                children: [
-                  // Grade level dropdown
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
-                      borderRadius: BorderRadius.circular(10),
-                      color: isDark ? AppColors.darkCard : Colors.white,
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedGrade,
-                        items: ['10', '11', '12'].map((g) {
-                          return DropdownMenuItem(value: g, child: Text('Grade $g Schedule'));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedGrade = val);
-                        },
+                  onPressed: () => _showAddPeriodDialog(context, schedule),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Class Timetable & Schedule',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
                       ),
                     ),
-                  ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add Period'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Master daily period schedules, subject timeslots, and room allocations.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
                     ),
-                    onPressed: () => _showAddPeriodDialog(context, schedule),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    // Grade level dropdown
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                        borderRadius: BorderRadius.circular(10),
+                        color: isDark ? AppColors.darkCard : Colors.white,
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedGrade,
+                          items: ['10', '11', '12'].map((g) {
+                            return DropdownMenuItem(value: g, child: Text('Grade $g Schedule'));
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _selectedGrade = val);
+                          },
+                        ),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Period'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _showAddPeriodDialog(context, schedule),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
-          // Day of Week Tabs
-          Row(
-            children: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) {
-              final isSelected = _selectedDay == day;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(day),
-                  selected: isSelected,
-                  onSelected: (val) {
-                    if (val) setState(() => _selectedDay = day);
-                  },
-                  backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-                  selectedColor: AppColors.primary,
-                  labelStyle: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? Colors.white : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+          // Day of Week Tabs (Horizontal Scrollable for Mobile)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((day) {
+                final isSelected = _selectedDay == day;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(day),
+                    selected: isSelected,
+                    onSelected: (val) {
+                      if (val) setState(() => _selectedDay = day);
+                    },
+                    backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+                    selectedColor: AppColors.primary,
+                    labelStyle: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.white : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
 
           const SizedBox(height: 20),

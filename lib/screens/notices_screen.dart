@@ -24,72 +24,114 @@ class _NoticesScreenState extends State<NoticesScreen> {
       return n.targetAudience == _audienceFilter || n.targetAudience == 'All';
     }).toList();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 750;
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Notice Board & Circulars',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Notice Board',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Broadcast school announcements, academic events, and emergency bulletins.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.campaign, size: 18),
-                label: const Text('Post Announcement'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: () => _showPostNoticeDialog(context),
+                const SizedBox(height: 4),
+                Text(
+                  'Announcements and school circulars.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.campaign, size: 18),
+              label: const Text('Post Notice', style: TextStyle(fontSize: 13)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-            ],
-          ),
+              onPressed: () => _showPostNoticeDialog(context),
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Notice Board & Circulars',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Broadcast school announcements, academic events, and emergency bulletins.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.campaign, size: 18),
+                  label: const Text('Post Announcement'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => _showPostNoticeDialog(context),
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
-          // Audience Filter
-          Row(
-            children: ['All', 'Parents', 'Teachers', 'Students'].map((aud) {
-              final isSelected = _audienceFilter == aud;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: Text(aud == 'All' ? 'All Audiences' : aud),
-                  selected: isSelected,
-                  onSelected: (val) {
-                    setState(() => _audienceFilter = aud);
-                  },
-                  backgroundColor: isDark ? AppColors.darkCard : Colors.white,
-                  selectedColor: AppColors.primary.withOpacity(0.18),
-                  labelStyle: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isSelected ? AppColors.primary : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+          // Audience Filter (Scrollable on small screens)
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: ['All', 'Parents', 'Teachers', 'Students'].map((aud) {
+                final isSelected = _audienceFilter == aud;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(aud == 'All' ? 'All Audiences' : aud),
+                    selected: isSelected,
+                    onSelected: (val) {
+                      setState(() => _audienceFilter = aud);
+                    },
+                    backgroundColor: isDark ? AppColors.darkCard : Colors.white,
+                    selectedColor: AppColors.primary.withOpacity(0.18),
+                    labelStyle: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? AppColors.primary : (isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary),
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+            ),
           ),
 
           const SizedBox(height: 20),

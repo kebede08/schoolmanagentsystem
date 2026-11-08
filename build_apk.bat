@@ -11,3 +11,4 @@ if %ERRORLEVEL% EQU 0 (
     echo [ERROR] Failed to build APK. Please check your Android SDK and Java installation.
 )
 pause
+

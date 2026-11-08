@@ -31,67 +31,125 @@ class _GradebookScreenState extends State<GradebookScreen> {
         ? (filtered.where((g) => g.score >= 60).length / filtered.length) * 100
         : 100.0;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 750;
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Examinations & Gradebook',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Examinations & Gradebook',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Evaluate academic performance, calculate GPA, and generate official report cards.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Academic performance, GPA, and report cards.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                   ),
-                ],
-              ),
-              Wrap(
-                spacing: 10,
-                children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.description_outlined, size: 18),
-                    label: const Text('Generate Report Card'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => _showSelectReportCardDialog(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.description_outlined, size: 16),
+                  label: const Text('Report Card', style: TextStyle(fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Add Score'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => _showAddGradeDialog(context),
+                  onPressed: () => _showSelectReportCardDialog(context),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Add Score', style: TextStyle(fontSize: 13)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                ],
-              ),
-            ],
-          ),
+                  onPressed: () => _showAddGradeDialog(context),
+                ),
+              ],
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Examinations & Gradebook',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Evaluate academic performance, calculate GPA, and generate official report cards.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                Wrap(
+                  spacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.description_outlined, size: 18),
+                      label: const Text('Generate Report Card'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _showSelectReportCardDialog(context),
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Add Score'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _showAddGradeDialog(context),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
-          // Term Selector & Performance Overview
-          Row(
+          // Term Selector & Performance Overview (Responsive Wrap)
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               Wrap(
                 spacing: 8,
@@ -112,12 +170,15 @@ class _GradebookScreenState extends State<GradebookScreen> {
                   );
                 }).toList(),
               ),
-              const Spacer(),
-              _metricPill('Class Average', '${avgScore.toStringAsFixed(1)} pts', AppColors.primary),
-              const SizedBox(width: 10),
-              _metricPill('Top Score', '${topScore.toStringAsFixed(1)} pts', AppColors.success),
-              const SizedBox(width: 10),
-              _metricPill('Pass Rate', '${passRate.toStringAsFixed(0)}%', AppColors.secondary),
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  _metricPill('Class Average', '${avgScore.toStringAsFixed(1)} pts', AppColors.primary),
+                  _metricPill('Top Score', '${topScore.toStringAsFixed(1)} pts', AppColors.success),
+                  _metricPill('Pass Rate', '${passRate.toStringAsFixed(0)}%', AppColors.secondary),
+                ],
+              ),
             ],
           ),
 

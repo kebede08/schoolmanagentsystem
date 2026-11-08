@@ -28,87 +28,154 @@ class _FeesScreenState extends State<FeesScreen> {
       return true;
     }).toList();
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 750;
+
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Fee Management & Billing',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.darkText : AppColors.lightText,
-                    ),
+          if (isMobile) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Fee Management & Billing',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.darkText : AppColors.lightText,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Track student tuition, payment status, receipts, and invoice reconciliation.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.receipt, size: 18),
-                label: const Text('Create Invoice'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: () => _showCreateInvoiceDialog(context),
+                const SizedBox(height: 4),
+                Text(
+                  'Tuition, payment status, receipts, and invoices.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.receipt, size: 18),
+              label: const Text('Create Invoice'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-            ],
-          ),
+              onPressed: () => _showCreateInvoiceDialog(context),
+            ),
+          ] else ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Fee Management & Billing',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? AppColors.darkText : AppColors.lightText,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Track student tuition, payment status, receipts, and invoice reconciliation.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.receipt, size: 18),
+                  label: const Text('Create Invoice'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => _showCreateInvoiceDialog(context),
+                ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
-          // Financial KPI Cards
-          Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  title: 'TOTAL BILLED',
-                  value: '\$${widget.state.totalFeesBilled.toStringAsFixed(0)}',
-                  icon: Icons.receipt_long,
-                  iconColor: AppColors.primary,
-                  subtitle: 'Academic Term 1',
+          // Financial KPI Cards (Adaptive for Mobile & Desktop)
+          if (isMobile) ...[
+            StatCard(
+              title: 'TOTAL BILLED',
+              value: '\$${widget.state.totalFeesBilled.toStringAsFixed(0)}',
+              icon: Icons.receipt_long,
+              iconColor: AppColors.primary,
+              subtitle: 'Academic Term 1',
+            ),
+            const SizedBox(height: 10),
+            StatCard(
+              title: 'TOTAL COLLECTED',
+              value: '\$${widget.state.totalFeesCollected.toStringAsFixed(0)}',
+              icon: Icons.check_circle_outline,
+              iconColor: AppColors.success,
+              trendText: '${widget.state.feeCollectionPercentage.toStringAsFixed(0)}% received',
+              isTrendPositive: true,
+            ),
+            const SizedBox(height: 10),
+            StatCard(
+              title: 'OUTSTANDING BALANCE',
+              value: '\$${widget.state.totalFeesPending.toStringAsFixed(0)}',
+              icon: Icons.error_outline,
+              iconColor: AppColors.danger,
+              trendText: 'Pending / Overdue',
+              isTrendPositive: false,
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: StatCard(
+                    title: 'TOTAL BILLED',
+                    value: '\$${widget.state.totalFeesBilled.toStringAsFixed(0)}',
+                    icon: Icons.receipt_long,
+                    iconColor: AppColors.primary,
+                    subtitle: 'Academic Term 1',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: StatCard(
-                  title: 'TOTAL COLLECTED',
-                  value: '\$${widget.state.totalFeesCollected.toStringAsFixed(0)}',
-                  icon: Icons.check_circle_outline,
-                  iconColor: AppColors.success,
-                  trendText: '${widget.state.feeCollectionPercentage.toStringAsFixed(0)}% received',
-                  isTrendPositive: true,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: StatCard(
+                    title: 'TOTAL COLLECTED',
+                    value: '\$${widget.state.totalFeesCollected.toStringAsFixed(0)}',
+                    icon: Icons.check_circle_outline,
+                    iconColor: AppColors.success,
+                    trendText: '${widget.state.feeCollectionPercentage.toStringAsFixed(0)}% received',
+                    isTrendPositive: true,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: StatCard(
-                  title: 'OUTSTANDING BALANCE',
-                  value: '\$${widget.state.totalFeesPending.toStringAsFixed(0)}',
-                  icon: Icons.error_outline,
-                  iconColor: AppColors.danger,
-                  trendText: 'Pending / Overdue',
-                  isTrendPositive: false,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: StatCard(
+                    title: 'OUTSTANDING BALANCE',
+                    value: '\$${widget.state.totalFeesPending.toStringAsFixed(0)}',
+                    icon: Icons.error_outline,
+                    iconColor: AppColors.danger,
+                    trendText: 'Pending / Overdue',
+                    isTrendPositive: false,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
 
           const SizedBox(height: 20),
 
